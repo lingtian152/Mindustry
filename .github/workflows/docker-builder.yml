@@ -33,13 +33,6 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Download latest pre-release jar
-        run: |
-          LATEST_URL=$(curl -s https://api.github.com/repos/Anuken/Mindustry/releases \
-            | jq -r '[.[] | select(.prerelease==true)][0].assets[] | select(.name=="server-release.jar").browser_download_url')
-          echo "Downloading server jar from: $LATEST_URL"
-          curl -L "$LATEST_URL" -o server.jar
-
       - name: Create buildx cache directory
         run: mkdir -p /tmp/.buildx-cache
 
