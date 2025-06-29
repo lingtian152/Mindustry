@@ -7,12 +7,11 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # 确保获取完整提交历史以优化缓存
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -30,11 +29,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Create buildx cache directory
-        run: mkdir -p /tmp/.buildx-cache
+      # Create cache directory first
+      - name: Create cache directory
+        run: |
+          mkdir -p /tmp/.buildx-cache
 
       - name: Cache Docker layers
         uses: actions/cache@v3
@@ -43,7 +41,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-          ttl: 7d
 
       - name: Build and Push Docker image
         uses: docker/build-push-action@v6
@@ -51,18 +48,22 @@ jobs:
           context: .
           tags: |
             lingtianps/mindustry:latest
-            lingtianps/mindustry:${{ github.sha }}
           push: true
           platforms: linux/arm64
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           outputs: type=registry,name=lingtianps/mindustry
 
-      - name: Move Docker cache
+      # Move cache
+      - name: Move cache
         if: always()
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
 
-      - name: Inspect final image
-        run: docker buildx imagetools inspect lingtianps/mindustry:latest
+      - name: Show Docker build logs
+        if: failure()
+        run: |
+          docker buildx imagetools inspect lingtianps/mindustry:latest || true
+          echo "Build logs:"
+          cat /tmp/buildx-debug.log || true
