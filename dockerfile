@@ -2,11 +2,9 @@ FROM openjdk:17-jdk-slim
 
 WORKDIR /opt/mindustry
 
-# 下载 Mindustry 服务端
-ADD https://github.com/Anuken/Mindustry/releases/latest/download/server-release.jar server.jar
+COPY server.jar server.jar
 
-# 将你的 config 和 mods 文件挂载进来
-VOLUME ["/opt/mindustry/config"]
+VOLUME ["/opt/mindustry/config", "/opt/mindustry/mods"]
 
 EXPOSE 6567
 EXPOSE 6567/udp
