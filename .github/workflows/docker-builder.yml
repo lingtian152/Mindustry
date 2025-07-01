@@ -30,6 +30,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Get latest release version
+        id: latest
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/Anuken/Mindustry/releases \
+            | jq -r '[.[] | select(.prerelease==false)][0].tag_name')
+          echo "Latest version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download server jar
+        run: |
+          curl -L "https://github.com/Anuken/Mindustry/releases/download/${{ steps.latest.outputs.version }}/server-release.jar" -o server.jar
+
       - name: Create buildx cache directory
         run: mkdir -p /tmp/.buildx-cache
 
@@ -48,6 +63,7 @@ jobs:
           context: .
           tags: |
             lingtianps/mindustry:latest
+            lingtianps/mindustry:${{ steps.latest.outputs.version }}
           push: true
           platforms: linux/arm64
           cache-from: type=local,src=/tmp/.buildx-cache
