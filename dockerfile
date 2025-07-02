@@ -1,5 +1,5 @@
 # 使用 openjdk17 的更小版本作为基础镜像
-FROM openjdk:17-alpine
+FROM openjdk:25-ea-17-jdk-bookworm
 
 # 设置默认语言/时区，防止日志乱码或时区偏差
 ENV LANG=C.UTF-8 \
