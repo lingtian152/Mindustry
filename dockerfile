@@ -26,4 +26,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD nc -z localhost 6567 || exit 1
 
 # 启动服务
-CMD ["java", "-jar", "server.jar"]
+CMD java -jar server.jar host
